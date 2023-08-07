@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    networks:
+      - internal
+    ports:
+      - 8080:8080
+    depends_on:
+      - pg
+    volumes:
+      - ./:/app
+  
+  pg:
+    image: postgres:15.3-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=changeit
+      - POSTGRES_DB=auth
+    networks:
+      - internal
+    # ports:
+    #   - 5432:5432
+    volumes:
+      - database:/var/lib/postgresql/data
+
+networks:
+  internal:
+    external: false
+volumes:
+  database: {}

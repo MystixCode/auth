@@ -1,0 +1,40 @@
+root = "." 
+tmp_dir = "tmp"
+
+[build]
+# Just plain old shell command. You could use `make` as well.
+cmd = "go build -buildvcs=false -o ./tmp/auth"
+# Binary file yields from `cmd`.
+bin = "tmp/"
+
+# Customize binary.
+# This is how you start to run your application. Since my application will works like CLI, so to run it, like to make a CLI call.
+full_bin = "./tmp/auth serve"
+# This log file places in your tmp_dir.
+log = "air_errors.log"
+# Watch these filename extensions.
+include_ext = ["go", "yaml"]
+# Ignore these filename extensions or directories.
+exclude_dir = ["tmp"]
+# It's not necessary to trigger build each time file changes if it's too frequent.
+delay = 1000 # ms
+
+[log]
+# Show log time
+time = true
+main_only = true
+
+[color]
+# Customize each part's color. If no color found, use the raw app log.
+main = "magenta"
+watcher = "cyan"
+build = "yellow"
+runner = "green"
+
+[misc]
+# Delete tmp directory on exit
+clean_on_exit = true
+
+[screen]
+clear_on_rebuild = true
+keep_scroll = true
