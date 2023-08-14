@@ -4,7 +4,9 @@ auth is a go api
 
 It's a container with the api and a container with a postgresql database.
 
+Its not oauth standard ;)
 
+<img src="auth.drawio.png" width="100%" height="100%">
 <!-- <img src="https:///.png" width="100%" height="100%"> -->
 
 
