@@ -65,16 +65,24 @@ func (s *Store) GetByID(id string) (*User, error) {
 	return user, nil
 }
 
-// func (s *Store) GetByUsername(username string) (*User, error) {
-// 	return s.getByKeyValue("username", username)
-// }
+func (s *Store) GetByUserName(userName string) (*User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var user *User
+
+	result := s.db.WithContext(ctx).Where("user_name = ?", userName).First(&user)
+	if result.Error != nil {
+		return nil, ErrLogin
+	}
+
+	return user, nil
+}
 
 // func (s *Store) GetByEmail(email string) (*User, error) {
 // 	return s.getByKeyValue("email", email)
 // }
 
 func (s *Store) Update(id string, user *User) (*User, error) {
-
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 	defer cancel()
 
@@ -103,21 +111,20 @@ func (s *Store) Delete(id string) error {
 }
 
 // func (s *Store) getByKeyValue(key string, value interface{}) (*User, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
-// 	defer cancel()
+//  	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+//  	defer cancel()
+//  	var user User
 
-// 	var user User
+//  	err := s.collection.FindOne(ctx, bson.M{key: value}).Decode(&user)
+//  	if err != nil {
+//  		switch err {
+//  		case mongo.ErrNoDocuments:
+//  			return nil, ErrNotFound
+//  		default:
+//  			s.logger.Warnf("error while finding user: %v", err)
+//  			return nil, ErrFindFailed
+//  		}
+//  	}
 
-// 	err := s.collection.FindOne(ctx, bson.M{key: value}).Decode(&user)
-// 	if err != nil {
-// 		switch err {
-// 		case mongo.ErrNoDocuments:
-// 			return nil, ErrNotFound
-// 		default:
-// 			s.logger.Warnf("error while finding user: %v", err)
-// 			return nil, ErrFindFailed
-// 		}
-// 	}
-
-// 	return &user, nil
+//  	return &user, nil
 // }

@@ -16,12 +16,12 @@ type UserInput struct {
 	Email     string `json:"email" validate:"required,email"`
 	FirstName string `json:"first_name" validate:"omitempty,min=2,alphanum"`
 	LastName  string `json:"last_name" validate:"omitempty,min=2,alphanum"`
-	Hash      string `json:"hash" validate:"required,alphanum"`
+	Hash      string `json:"hash" validate:"required,base64"`
 }
 
 type LoginInput struct {
-	Email     string `json:"email" validate:"required,email"`
-	Hash      string `json:"hash" validate:"required,alphanum"`
+	UserName  string `json:"user_name" validate:"required,alphanum"`
+	Hash      string `json:"hash" validate:"required,base64"`
 }
 
 type TokenResponse struct {

@@ -11,4 +11,5 @@ var (
 	ErrDeleteFailed             = errors.New("error while deleting user")
 	ErrPasswordChangeNotAllowed = errors.New("password update only allowed on the 'password_change' endpoint")
 	ErrValidationFailed			= errors.New("validation failed")
+	ErrLogin					= errors.New("login failed")
 )

@@ -5,6 +5,7 @@ import (
 	"auth/log"
 
 	"time"
+	"strconv"
 
 	"gorm.io/gorm"
 	"github.com/golang-jwt/jwt/v5"
@@ -45,23 +46,29 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 		return nil, ErrValidationFailed
 	}
 
-
-
-	// TODO:
-
-	// Verify email
+	// Verify user_name exists
+	foundUser, err := s.Store.GetByUserName(input.UserName)
+	if err != nil {
+		s.Log.Error().Err(err).Msg("Verifying that user exists")
+		return nil, ErrLogin
+	}
+	s.Log.Debug().Msgf("Found user: ", foundUser.UserName)
 
 	// Verify hash
+	if input.Hash != foundUser.Hash {
+		s.Log.Error().Err(ErrLogin).Msg("Hashes are not equal")
+		return nil, ErrLogin
+	}
+	s.Log.Debug().Msg("hash is equal")
 
+	// TODO:
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// Generate Access Token
 	//////////////////////////////////////////////////////////////////////////////////////////
 
 	mySigningKey := []byte("AllYourBase")
-
-	// Create claims with multiple fields populated
 	claims := MyCustomClaims{
-		"Spartan117",
+		foundUser.UserName,
 		"profileRead",
 		jwt.RegisteredClaims{
 			// A usual scenario is to set the expiration time relative to the current time
@@ -69,12 +76,13 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "localhost:8080/v1",
-			Subject:   "uid",
+			Subject:   strconv.Itoa(foundUser.ID),
 			ID:        uuid.New().String(),
 			Audience:  []string{"game_server"},
 		},
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	s.Log.Debug().Msgf("Access token generated: ", accessToken)
 	ssAccess, err := accessToken.SignedString(mySigningKey)
 	if err != nil {
 		return nil, err
@@ -87,13 +95,14 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	refreshTokenClaims := jwt.RegisteredClaims{
 		// You can add any relevant claims here
 		Issuer:    "https://example.com",  // Replace with your issuer URL
-		Subject:   "user_id_here",         // Replace with the user ID
+		Subject:   strconv.Itoa(foundUser.ID),         // Replace with the user ID
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)), // Refresh token expiration (30 days)
 	}
 
 	// Create a new token object with the specified claims
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
+	s.Log.Debug().Msgf("Refresh token generated: ", refreshToken)
 	ssRefresh, err := refreshToken.SignedString(mySigningKey)
 	if err != nil {
 		return nil, err
