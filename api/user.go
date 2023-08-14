@@ -56,7 +56,8 @@ func (e *UserEndpoint) Login(w http.ResponseWriter, r *http.Request) {
 
 	response, err := e.service.Login(input)
 	if err != nil {
-		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
+		respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
 	respond(w, e.log, http.StatusOK, "user logged in successfully", response)
@@ -81,6 +82,7 @@ func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 	createdUser, err := e.service.Create(input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
+		return
 	}
 
 	respond(w, e.log, http.StatusCreated, "user created successfully", createdUser)
