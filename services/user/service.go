@@ -6,10 +6,6 @@ import (
 
 	"time"
 
-	"fmt"
-
-
-
 	"gorm.io/gorm"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -38,47 +34,15 @@ type MyCustomClaims struct {
 }
 
 func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
-	var u LoginInput
 
-	//TODO validation
-	if input.Email != "" {
-		u.Email = input.Email
-	}
-
-	if input.Hash != "" {
-		u.Hash = input.Hash
-	}
-
-
+	//validation
 	// returns nil or ValidationErrors ( []FieldError )
-	err := s.Validator.Struct(u)
+	err := s.Validator.Struct(input)
 	if err != nil {
-
-		// this check is only needed when your code could produce
-		// an invalid value for validation such as interface with nil
-		// value most including myself do not usually have code like this.
-		if _, ok := err.(*validator.InvalidValidationError); ok {
-			fmt.Println(err)
-			return nil, err
-		}
-
 		for _, err := range err.(validator.ValidationErrors) {
-
-			fmt.Println(err.Namespace())
-			fmt.Println(err.Field())
-			fmt.Println(err.StructNamespace())
-			fmt.Println(err.StructField())
-			fmt.Println(err.Tag())
-			fmt.Println(err.ActualTag())
-			fmt.Println(err.Kind())
-			fmt.Println(err.Type())
-			fmt.Println(err.Value())
-			fmt.Println(err.Param())
-			fmt.Println()
+			s.Log.Error().Err(err).Msg("Validation failed")
 		}
-
-		// from here you can create your own error messages in whatever language you wish
-		return nil, err
+		return nil, ErrValidationFailed
 	}
 
 
@@ -149,27 +113,21 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 func (s *Service) Create(input UserInput) (*User, error) {
 	var u User
 
-	//TODO validation
-	if input.UserName != "" {
-		u.UserName = input.UserName
+	//validation
+	// returns nil or ValidationErrors ( []FieldError )
+	err := s.Validator.Struct(input)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			s.Log.Error().Err(err).Msg("Validation failed")
+		}
+		return nil, ErrValidationFailed
 	}
 
-	if input.Email != "" {
-		u.Email = input.Email
-	}
-
-	if input.FirstName != "" {
-		u.FirstName = input.FirstName
-	}
-
-	if input.LastName != "" {
-		u.LastName = input.LastName
-	}
-
-	if input.Hash != "" {
-		u.Hash = input.Hash
-	}
-
+	u.UserName = input.UserName
+	u.Email = input.Email
+	u.FirstName = input.FirstName
+	u.LastName = input.LastName
+	u.Hash = input.Hash
 	timeNow := time.Now().Unix()
 	u.CreatedAt = timeNow
 	u.UpdatedAt = timeNow
@@ -198,6 +156,14 @@ func (s *Service) Update(id string, input *UserInput) (*User, error) {
 	u, err := s.Store.GetByID(id)
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.Validator.Struct(input)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			s.Log.Error().Err(err).Msg("Validation failed")
+		}
+		return nil, ErrValidationFailed
 	}
 
 	if input.UserName != "" {
