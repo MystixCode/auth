@@ -6,7 +6,6 @@ import (
 	"auth/services/root"
 	"auth/services/user"
 	"auth/services/app"
-	"auth/services/authorize"
 )
 
 // Services holds all available services
@@ -16,5 +15,4 @@ type Services struct {
 	User    	*user.Service
 	Example 	*example.Service
 	App 		*app.Service
-	Authorize 	*authorize.Service
 }

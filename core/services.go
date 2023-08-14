@@ -7,7 +7,6 @@ import (
 	"auth/services/root"
 	"auth/services/user"
 	"auth/services/app"
-	"auth/services/authorize"
 )
 
 func (c *Core) newServices() *services.Services {
@@ -15,10 +14,9 @@ func (c *Core) newServices() *services.Services {
 	c.Log.Info().Msg("Setup services")
 	rootService := root.NewService()
 	healthService := health.NewService(&c.state)
-	userService := user.NewService(c.Log, c.Conf, c.Database)
+	userService := user.NewService(c.Log, c.Conf, c.Database, c.Validator)
 	exampleService := example.NewService(c.Log, c.Conf, c.Database)
 	appService := app.NewService(c.Log, c.Conf, c.Database)
-	authorizeService := authorize.NewService(c.Log, c.Conf, c.Database)
 
 	return &services.Services{
 		Root:		rootService,
@@ -26,6 +24,5 @@ func (c *Core) newServices() *services.Services {
 		User:		userService,
 		Example:	exampleService,
 		App:		appService,
-		Authorize:	authorizeService,
 	}
 }

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	// "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 	// "git.bitcubix.io/go/validation"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
@@ -28,7 +28,7 @@ type Core struct {
 	api        *api.Api
 	services   *services.Services
 	state      health.State
-	// Validator  *validation.Validator
+	Validator  *validator.Validate
 	// wg holds registered processes for graceful shutdown
 	wg *sync.WaitGroup
 	// context holds global context
@@ -56,7 +56,7 @@ func New(cfgFile string, isDebug bool, logFile string) (*Core, error) {
 	c.Conf = c.newConf(cfgFile)
 	c.Log = c.newLog(isDebug, logFile)
 	// c.translator = c.newTranslator()
-	// c.Validator = c.newValidator()
+	c.Validator = c.NewValidator()
 	c.Database = c.NewDatabase()
 	c.services = c.newServices()
 	// TODO: router with return

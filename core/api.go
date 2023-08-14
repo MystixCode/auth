@@ -12,7 +12,6 @@ func (c *Core) newApi() *api.Api {
 		User:    	api.NewUserEndpoint(c.Log, c.services.User),
 		Example:	api.NewExampleEndpoint(c.Log, c.services.Example),
 		App: 		api.NewAppEndpoint(c.Log, c.services.App),
-		Authorize:	api.NewAuthorizeEndpoint(c.Log, c.services.Authorize),
 	}
 
 	api.New(c.router)

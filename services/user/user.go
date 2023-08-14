@@ -19,6 +19,17 @@ type UserInput struct {
 	Hash      string `json:"hash"`
 }
 
+type LoginInput struct {
+	Email     string `json:"email" validate:"required,email"`
+	Hash      string `json:"hash" validate:"required"`
+}
+
+type TokenResponse struct {
+	TokenType    string `json:"token_type"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 // type PasswordInput struct {
 // 	ActivePassword string `json:"active_password" validate:"required,password"`
 // 	NewPassword    string `json:"new_password" validate:"required,password"`

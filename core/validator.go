@@ -2,27 +2,22 @@ package core
 
 import (
 	// "os"
-	// "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 	// "git.bitcubix.io/go/validation"
 )
 
+// use a single instance of Validate, it caches struct info
+//var validate *validator.Validate
+
 // func (c *Core) newValidator() *validation.Validator {
-	func (c *Core) newValidator() {
-
-	// validator := validation.NewValidator()
-
-	// Todo: add return err to validation.NewValidator()
-	// validator, err := validation.NewValidator()
-	// if err != nil {
-	// 	log.Error().Err(err).Msg("Setup validator error")
-	// 	os.Exit(2)
-	// }
-
-	// Todo: Setup Validator --> check stuff in git.bitcubix.io/go/validation
-	// Todo: use validator in example and user service
+func (c *Core) NewValidator() *validator.Validate {
 
 	c.Log.Info().Msg("Setup validator")
-	c.Log.Warn().Msg("TODO: Setup validator")
-	// return validator
-	return
+	
+	validator := validator.New()
+
+	// Todo: use validator in example and user service
+	
+	c.Log.Warn().Msg("Setup validator done")
+	return validator
 }

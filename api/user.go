@@ -38,6 +38,30 @@ func NewUserEndpoint(log *log.Logger, service *user.Service) *UserEndpoint {
 // 	}
 // }
 
+func (e *UserEndpoint) Login(w http.ResponseWriter, r *http.Request) {
+	var input user.LoginInput
+
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
+		return
+	}
+	//fmt.Println("input", input)
+	// err = e.validate.Struct(input)
+	// if err != nil {
+	// 	errs := getValidationError(err.(validator.ValidationErrors), trans)
+	// 	respond(w, e.logger, http.StatusBadRequest, "validation failed", errs)
+	// 	return
+	// }
+
+	response, err := e.service.Login(input)
+	if err != nil {
+		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
+	}
+
+	respond(w, e.log, http.StatusOK, "user logged in successfully", response)
+}
+
 func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 	var input user.UserInput
 

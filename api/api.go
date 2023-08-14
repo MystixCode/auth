@@ -17,7 +17,6 @@ type Api struct {
 	User    	*UserEndpoint
 	Example		*ExampleEndpoint
 	App 		*AppEndpoint
-	Authorize	*AuthorizeEndpoint
 }
 
 type Body struct {
@@ -52,6 +51,7 @@ func (a *Api) New(router *mux.Router) {
 	v1.HandleFunc("/users/{id}", a.User.GetById).Methods(http.MethodGet)
 	v1.HandleFunc("/users/{id}", a.User.Update).Methods(http.MethodPut)
 	v1.HandleFunc("/users/{id}", a.User.Delete).Methods(http.MethodDelete)
+	v1.HandleFunc("/users/login", a.User.Login).Methods(http.MethodPost)
 
 	// App
 	v1.HandleFunc("/apps", a.App.Create).Methods(http.MethodPost)
@@ -59,17 +59,6 @@ func (a *Api) New(router *mux.Router) {
 	v1.HandleFunc("/apps/{id}", a.App.GetById).Methods(http.MethodGet)
 	v1.HandleFunc("/apps/{id}", a.App.Update).Methods(http.MethodPut)
 	v1.HandleFunc("/apps/{id}", a.App.Delete).Methods(http.MethodDelete)
-
-
-	// Flow endpoints
-
-	// Authorize we support both post and get
-	v1.HandleFunc("/authorize", a.Authorize.ViaPost).Methods(http.MethodPost)
-	v1.HandleFunc("/authorize", a.Authorize.ViaGet).Methods(http.MethodGet)
-	v1.HandleFunc("/login", a.Authorize.LoginPage).Methods(http.MethodGet)
-	v1.HandleFunc("/login", a.Authorize.Login).Methods(http.MethodPost)
-	v1.HandleFunc("/consent", a.Authorize.Consent).Methods(http.MethodGet)
-
 
 }
 
