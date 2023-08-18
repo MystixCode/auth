@@ -1,5 +1,9 @@
 package user
 
+import (
+	"github.com/golang-jwt/jwt/v5"
+)
+
 type User struct {
 	ID        int    `json:"id" gorm:"primaryKey"`
 	UserName  string `json:"user_name"`
@@ -28,6 +32,12 @@ type TokenResponse struct {
 	TokenType    string `json:"token_type"`
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type MyCustomClaims struct {
+	Username string `json:"username"`
+	Scopes string `json:"scopes"`
+	jwt.RegisteredClaims
 }
 
 // type PasswordInput struct {

@@ -8,6 +8,7 @@ type App struct {
 	RedirectURL string `json:"redirect_url"`
 	CreatedAt   int64  `json:"created_at"`
 	UpdatedAt   int64  `json:"updated_at"`
+	//TODO: add SigningMethod (rsa, ed25519, hmac) and then use the value in app creation or key change
 
 	// Associations
 	AccessTokens       []AccessToken       `json:"-" gorm:"foreignKey:AppID"`

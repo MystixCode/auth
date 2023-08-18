@@ -6,6 +6,12 @@ import (
 
 	"time"
 	"strconv"
+	"io/ioutil"
+	//"crypto/ed25519"
+	//"encoding/pem"
+	//"encoding/asn1"
+	//"crypto/rsa"
+	//"crypto/x509"
 
 	"gorm.io/gorm"
 	"github.com/golang-jwt/jwt/v5"
@@ -28,16 +34,10 @@ func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *vali
 	}
 }
 
-type MyCustomClaims struct {
-	Username string `json:"username"`
-	Scopes string `json:"scopes"`
-	jwt.RegisteredClaims
-}
-
 func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
-
-	//validation
-	// returns nil or ValidationErrors ( []FieldError )
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Validate and verify input
+	//////////////////////////////////////////////////////////////////////////////////////////
 	err := s.Validator.Struct(input)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
@@ -61,17 +61,66 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msg("hash is equal")
 
-	// TODO:
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// Generate Access Token
+	// Get and parse signKey --> todo: create a function for that
 	//////////////////////////////////////////////////////////////////////////////////////////
 
-	mySigningKey := []byte("AllYourBase")
-	claims := MyCustomClaims{
+	var (
+
+		signMethod  jwt.SigningMethod
+		privPath	string
+		signBytes   []byte
+		signKey     interface{} // This will hold the private key or secret
+	)
+
+	//TODO: get AppName from app the user belongs to
+	appName := "test"
+	//TODO: get method from app the user belongs to
+	signMethod = jwt.SigningMethodRS256
+
+
+	// Determine the signing method
+	if signMethod == jwt.SigningMethodRS256 {
+		privPath = appName + "_rsa.pem"
+		signBytes, err = ioutil.ReadFile(privPath)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
+			return nil, err
+		}
+		parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error parsing private key")
+			return nil, err
+		}
+		signKey = parsedKey
+		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
+	} else if signMethod == jwt.SigningMethodEdDSA {
+		privPath = appName + "_ed25519.pem"
+		signBytes, err = ioutil.ReadFile(privPath)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
+			return nil, err
+		}
+		parsedKey, err := jwt.ParseEdPrivateKeyFromPEM(signBytes)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error parsing private key")
+			return nil, err
+		}
+		signKey = parsedKey
+		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
+	} else if signMethod == jwt.SigningMethodHS256 {
+		signKey = []byte("AllYourBase")
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	// Generate Access Token --> todo: create a function for that
+	//////////////////////////////////////////////////////////////////////////////////////////
+
+	accessTokenClaims := MyCustomClaims{
 		foundUser.UserName,
 		"profileRead",
 		jwt.RegisteredClaims{
-			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
@@ -81,19 +130,18 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 			Audience:  []string{"game_server"},
 		},
 	}
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	s.Log.Debug().Msgf("Access token generated: ", accessToken)
-	ssAccess, err := accessToken.SignedString(mySigningKey)
+	accessToken := jwt.NewWithClaims(signMethod, accessTokenClaims)
+	s.Log.Debug().Msgf("Access token generated: %v", accessToken)
+	ssAccess, err := accessToken.SignedString(signKey)
 	if err != nil {
 		return nil, err
 	}
+
 	//////////////////////////////////////////////////////////////////////////////////////////
-	// Generate Refresh Token
+	// Generate Refresh Token --> todo: create a function for that
 	//////////////////////////////////////////////////////////////////////////////////////////
 
-	// Create claims for the refresh token
 	refreshTokenClaims := jwt.RegisteredClaims{
-		// You can add any relevant claims here
 		Issuer:    "https://example.com",  // Replace with your issuer URL
 		Subject:   strconv.Itoa(foundUser.ID),         // Replace with the user ID
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -101,15 +149,16 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 
 	// Create a new token object with the specified claims
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshTokenClaims)
-	s.Log.Debug().Msgf("Refresh token generated: ", refreshToken)
-	ssRefresh, err := refreshToken.SignedString(mySigningKey)
+	refreshToken := jwt.NewWithClaims(signMethod, refreshTokenClaims)
+	s.Log.Debug().Msgf("Refresh token generated: %v", refreshToken)
+	ssRefresh, err := refreshToken.SignedString(signKey)
 	if err != nil {
 		return nil, err
 	}
-	//////////////////////////////////////////////////////////////////////////////////////////
 
+	//////////////////////////////////////////////////////////////////////////////////////////
 	// Create the response map
+	//////////////////////////////////////////////////////////////////////////////////////////
 	tokenResponse := &TokenResponse{
 		TokenType:    "bearer",
 		AccessToken:  ssAccess,

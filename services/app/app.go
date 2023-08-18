@@ -13,8 +13,8 @@ type App struct {
 type AppInput struct {
 	AppName  string `json:"app_name"`
 	AppURL        string `json:"app_url"`
-	RedirectURL   string `json:"redirect_url"`
-	ClientType    string `json:"client_type"`
+	//RedirectURL   string `json:"redirect_url"`
+	//ClientType    string `json:"client_type"`
 }
 
 // type PasswordInput struct {
