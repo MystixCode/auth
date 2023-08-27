@@ -8,6 +8,7 @@ import (
 	"auth/services/example"
 	"auth/services/user"
 	"auth/services/app"
+	"auth/services/key"
 
 	"github.com/spf13/cobra"
 )
@@ -36,6 +37,7 @@ func migrate(cmd *cobra.Command, args []string) {
 		example.Example{},
 		user.User{},
 		app.App{},
+		key.Key{},
 	)
 
 }

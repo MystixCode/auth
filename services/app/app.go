@@ -1,18 +1,27 @@
 package app
 
+import (
+	"auth/services/key"
+)
+
 type App struct {
-	ID            int    `json:"id" gorm:"primaryKey"`
-	AppName       string `json:"app_name"`
-	AppURL        string `json:"app_url"`
-	RedirectURL   string `json:"redirect_url"`
-	ClientType    string `json:"client_type"` //public or confidential. maybe create a table for it
-	CreatedAt     int64  `json:"created_at"`
-	UpdatedAt     int64  `json:"updated_at"`
+	ID            	int    `json:"id" gorm:"primaryKey"`
+	AppName       	string `json:"app_name"`
+	AppURI        	string `json:"app_uri"`
+	RedirectURI   	string `json:"redirect_uri"`
+	ClientType    	string `json:"client_type"` //public or confidential. maybe create a table for it
+	SignMethod		string `json:"sign_method"`
+	ClientID		string `json:"client_id"`
+	CreatedAt     	int64  `json:"created_at"`
+	UpdatedAt     	int64  `json:"updated_at"`
+
+	Keys []key.Key `json:"keys" gorm:"foreignKey:AppID;onDelete:CASCADE"` // Many keys belong to one app
 }
 
 type AppInput struct {
-	AppName  string `json:"app_name"`
-	AppURL        string `json:"app_url"`
+	AppName  		string `json:"app_name"`
+	AppURI      	string `json:"app_uri"`
+	SignMethod		string `json:"sign_method"`
 	//RedirectURL   string `json:"redirect_url"`
 	//ClientType    string `json:"client_type"`
 }

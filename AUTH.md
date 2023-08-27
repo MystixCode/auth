@@ -4,32 +4,30 @@ package model
 type App struct {
 	ID          uint   `gorm:"primaryKey"`
 	AppName     string `json:"app_name"`
-	AppURL      string `json:"app_url"`
-	RedirectURL string `json:"redirect_url"`
+	AppURI      string `json:"app_uri"`
+	RedirectURI string `json:"redirect_uri"`
 	CreatedAt   int64  `json:"created_at"`
 	UpdatedAt   int64  `json:"updated_at"`
-	//TODO: add SigningMethod (rsa, ed25519, hmac) and then use the value in app creation or key change
 
-	// Associations
-	AccessTokens       []AccessToken       `json:"-" gorm:"foreignKey:AppID"`
-	RefreshTokens      []RefreshToken      `json:"-" gorm:"foreignKey:AppID"`
-	RevokedTokens      []RevokedToken      `json:"-" gorm:"foreignKey:AppID"`
+	AccessTokens  []AccessToken  `json:"-" gorm:"foreignKey:AppID"`
+	RefreshTokens []RefreshToken `json:"-" gorm:"foreignKey:AppID"`
+	RevokedTokens []RevokedToken `json:"-" gorm:"foreignKey:AppID"`
 }
 
 type User struct {
-	ID        uint   `gorm:"primaryKey"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
+	ID            uint   `gorm:"primaryKey"`
+	UserName      string `json:"user_name"`
+	Password      string `json:"password"`
+	CreatedAt     int64  `json:"created_at"`
+	UpdatedAt     int64  `json:"updated_at"`
 
-	// Associations
 	AccessTokens  []AccessToken  `json:"-" gorm:"foreignKey:UserID"`
 	RefreshTokens []RefreshToken `json:"-" gorm:"foreignKey:UserID"`
 	RevokedTokens []RevokedToken `json:"-" gorm:"foreignKey:UserID"`
 	Roles         []Role         `json:"roles" gorm:"many2many:user_roles;"`
 }
 
+//i need those token tables. else i clouldnt revoke them.
 type AccessToken struct {
 	ID        uint   `gorm:"primaryKey"`
 	Token     string `json:"token"`
@@ -59,32 +57,30 @@ type RevokedToken struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
-type Scope struct {
-	ID   uint   `gorm:"primaryKey"`
-	Name string `json:"name"`
-}
-
-type ResourceServer struct {
-    ID         uint   `gorm:"primaryKey"`
-    Name       string `json:"name"`
-    PubKeyPath string `json:"pub_key_path"` // Path to the public key file
-    PrivateKey string `json:"private_key"`  // Path to the private key file
-    Scopes     []Scope `json:"scopes" gorm:"many2many:resource_server_scopes;"`
-}
-
-type ResourceServerScope struct {
-	ResourceServerID uint `gorm:"primaryKey"`
-	ScopeID          uint `gorm:"primaryKey"`
-}
-
 type Role struct {
 	ID        uint   `gorm:"primaryKey"`
 	RoleName  string `json:"role_name"`
 	CreatedAt int64  `json:"created_at"`
 	UpdatedAt int64  `json:"updated_at"`
 
-	// Associations
 	Users []User `json:"users" gorm:"many2many:user_roles;"`
+}
+
+type Scope struct {
+	ID   uint   `gorm:"primaryKey"`
+	Name string `json:"name"`
+}
+
+type ResourceServer struct {
+	ID         uint   `gorm:"primaryKey"`
+	Name       string `json:"name"`
+	PubKeyPath string `json:"pub_key_path"`
+	Scopes     []Scope `json:"scopes" gorm:"many2many:resource_server_scopes;"`
+}
+
+type ResourceServerScope struct {
+	ResourceServerID uint `gorm:"primaryKey"`
+	ScopeID          uint `gorm:"primaryKey"`
 }
 
 type RoleScope struct {

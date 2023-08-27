@@ -6,12 +6,12 @@ import (
 
 type User struct {
 	ID        int    `json:"id" gorm:"primaryKey"`
-	UserName  string `json:"user_name"`
+	UserName  string `json:"user_name" gorm:"not null"`
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Hash      string `json:"hash"`
-	CreatedAt int64  `json:"created_at"`
+	Hash      string `json:"hash" gorm:"not null"`
+	CreatedAt int64  `json:"created_at" gorm:"not null"`
 	UpdatedAt int64  `json:"updated_at"`
 }
 
@@ -24,6 +24,7 @@ type UserInput struct {
 }
 
 type LoginInput struct {
+	ClientID  string `json:"client_id" validate:"required"`
 	UserName  string `json:"user_name" validate:"required,alphanum"`
 	Hash      string `json:"hash" validate:"required,base64"`
 }

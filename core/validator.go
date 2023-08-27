@@ -16,8 +16,7 @@ func (c *Core) NewValidator() *validator.Validate {
 	
 	validator := validator.New()
 
-	// Todo: use validator in example and user service
-	
-	c.Log.Warn().Msg("Setup validator done")
+	// Todo: use validator in example service
+
 	return validator
 }

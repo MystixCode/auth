@@ -15,18 +15,18 @@ Its not oauth standard ;)
 > in dev mode the air package is used for hot reload
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build
 ```
 
 ## run with compose
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 show logs:
 ```bash
-docker-compose logs -f auth
-docker-compose logs -f postgres
+docker compose logs -f auth
+docker compose logs -f postgres
 ```
 
 ## run with docker
@@ -46,7 +46,7 @@ docker run -p 8080:8080 auth
     #   - 5432:5432
 
 # Build and start Database
-docker-compose up --build -d postgres
+docker compose up --build -d postgres
 
 # Run migrate cli command
 go run auth migrate

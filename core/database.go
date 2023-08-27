@@ -11,6 +11,7 @@ import (
 	"auth/services/example"
 	"auth/services/user"
 	"auth/services/app"
+	"auth/services/key"
 )
 
 func (c *Core) NewDatabase() *gorm.DB {
@@ -35,6 +36,7 @@ func (c *Core) NewDatabase() *gorm.DB {
 		example.Example{},
 		user.User{},
 		app.App{},
+		key.Key{},
 	)
 
 	c.registerShutdownFunc(func() error {

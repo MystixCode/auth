@@ -3,11 +3,11 @@ package app
 import (
 	"auth/conf"
 	"auth/log"
+	"auth/services/key"
 
 	"time"
 	"crypto/ed25519"
 	"io/ioutil"
-
 
 	"crypto/rand"
 	"crypto/rsa"
@@ -18,18 +18,19 @@ import (
 	//"path/filepath"
 
 	"gorm.io/gorm"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type Service struct {
 	Log   *log.Logger
 	Store *Store
+	KeyService *key.Service // Inject key service dependency
 }
 
-func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB) *Service {
+func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, keyService *key.Service) *Service {
 	return &Service{
 		Log:   log,
 		Store: NewStore(log, conf, db),
+		KeyService: keyService,
 	}
 }
 
@@ -134,8 +135,12 @@ func (s *Service) Create(input AppInput) (*App, error) {
 		a.AppName = input.AppName
 	}
 
-	if input.AppURL != "" {
-		a.AppURL = input.AppURL
+	if input.AppURI != "" {
+		a.AppURI = input.AppURI
+	}
+
+	if input.SignMethod != "" {
+		a.SignMethod = input.SignMethod
 	}
 
 	// if input.RedirectURL != "" {
@@ -155,24 +160,15 @@ func (s *Service) Create(input AppInput) (*App, error) {
 		return nil, err
 	}
 
-
-	//TODO signingMethod DB field and AppInput field
-	var signMethod  jwt.SigningMethod
-	signMethod = jwt.SigningMethodRS256
-
-	// Determine the signing method
-	if signMethod == jwt.SigningMethodRS256 {
-		privPath := a.AppName + "_rsa.pem"
-		pubPath := a.AppName + "_rsa.pub.pem"
-		generateRSAKeys(privPath, pubPath)
-	} else if signMethod == jwt.SigningMethodEdDSA {
-		privPath := a.AppName + "_ed25519.pem"
-		pubPath := a.AppName + "_ed25519.pub.pem"
-		generateEd25519Keys(privPath, pubPath)
-	} else if signMethod == jwt.SigningMethodHS256 {
-		s.Log.Debug().Msg("todo: function to generate and save to file")
+    // Create key using the injected key service
+    keyInput := key.KeyInput{
+        AppID:  createdApp.ID, // Use the actual app ID here
+    }
+    createdKey, err := s.KeyService.Create(keyInput) // Call key service's Create method
+	if err != nil {
+		return nil, err
 	}
-
+	s.Log.Debug().Msgf("Created Key", createdKey)
 
 	return createdApp, nil
 }
@@ -199,8 +195,8 @@ func (s *Service) Update(id string, input *AppInput) (*App, error) {
 		a.AppName = input.AppName
 	}
 
-	if input.AppURL != "" {
-		a.AppURL = input.AppURL
+	if input.AppURI != "" {
+		a.AppURI = input.AppURI
 	}
 
 	// if input.RedirectURL != "" {
