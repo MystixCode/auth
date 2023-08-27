@@ -22,7 +22,7 @@ type AppInput struct {
 	AppName  		string `json:"app_name"`
 	AppURI      	string `json:"app_uri"`
 	SignMethod		string `json:"sign_method"`
-	//RedirectURL   string `json:"redirect_url"`
+	//RedirectURI   string `json:"redirect_uri"`
 	//ClientType    string `json:"client_type"`
 }
 
