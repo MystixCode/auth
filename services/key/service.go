@@ -37,6 +37,10 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 	if input.AppID != 0 {
 		k.AppID = input.AppID
 	}
+	
+	if input.Alg != "" {
+		k.Alg = input.Alg
+	}
 
 	timeNow := time.Now().Unix()
 	k.CreatedAt = timeNow
@@ -46,10 +50,12 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 		return nil, err
 	}
 
-	//TODO get client id from App
+	//TODO get client id and alg from App
+
+	// https://golang-jwt.github.io/jwt/usage/signing_methods/
+
 	var clientID = 666
-	var signMethod = "EdDSA"
-	s.Generate(clientID,signMethod)
+	s.generate(clientID,k.Alg)
 
 	return createdKey, nil
 }
@@ -165,25 +171,23 @@ func generateEd25519Keys(privPath string, pubPath string) error {
 	return err
 }
 
-func (s *Service) Generate(clientID int, method string) error {
+func (s *Service) generate(clientID int, alg string) error {
 	var err error
 
-	switch method {
+	switch alg {
 	case "RS256":
 		privPath := strconv.Itoa(clientID) + "_rsa.pem"
 		pubPath := strconv.Itoa(clientID) + "_rsa.pub.pem"
 		err = generateRSAKeys(privPath, pubPath)
-
-	case "EdDSA":
+	case "Ed25519":
 		privPath := strconv.Itoa(clientID) + "_ed25519.pem"
 		pubPath := strconv.Itoa(clientID) + "_ed25519.pub.pem"
 		err = generateEd25519Keys(privPath, pubPath)
-
 	case "HS256":
 		s.Log.Debug().Msg("todo: function to generate and save to file")
 
 	default:
-		s.Log.Debug().Msg("unknown method")
+		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown method")
 	}
 
 	return err

@@ -10,7 +10,7 @@ type App struct {
 	AppURI        	string `json:"app_uri"`
 	RedirectURI   	string `json:"redirect_uri"`
 	ClientType    	string `json:"client_type"` //public or confidential. maybe create a table for it
-	SignMethod		string `json:"sign_method"`
+	Alg				string `json:"alg"`
 	ClientID		string `json:"client_id"`
 	CreatedAt     	int64  `json:"created_at"`
 	UpdatedAt     	int64  `json:"updated_at"`
@@ -21,7 +21,7 @@ type App struct {
 type AppInput struct {
 	AppName  		string `json:"app_name"`
 	AppURI      	string `json:"app_uri"`
-	SignMethod		string `json:"sign_method"`
+	Alg				string `json:"alg"`
 	//RedirectURI   string `json:"redirect_uri"`
 	//ClientType    string `json:"client_type"`
 }

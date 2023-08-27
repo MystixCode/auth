@@ -36,8 +36,8 @@ func (s *Service) Create(input AppInput) (*App, error) {
 		a.AppURI = input.AppURI
 	}
 
-	if input.SignMethod != "" {
-		a.SignMethod = input.SignMethod
+	if input.Alg != "" {
+		a.Alg = input.Alg
 	}
 
 	// if input.RedirectURL != "" {
@@ -60,6 +60,7 @@ func (s *Service) Create(input AppInput) (*App, error) {
     // Create key using the injected key service
     keyInput := key.KeyInput{
         AppID:  createdApp.ID, // Use the actual app ID here
+		Alg:	a.Alg,
     }
     createdKey, err := s.KeyService.Create(keyInput) // Call key service's Create method
 	if err != nil {
