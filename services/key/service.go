@@ -15,33 +15,37 @@ import (
 
 	//"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
+	"github.com/go-playground/validator/v10"
 )
 
 type Service struct {
 	Log   *log.Logger
 	Store *Store
+	Validator *validator.Validate
 }
 
-func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB) *Service {
+func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *validator.Validate) *Service {
 	return &Service{
 		Log:   log,
 		Store: NewStore(log, conf, db),
+		Validator: validator,
 	}
 }
 
 func (s *Service) Create(input KeyInput) (*Key, error) {
 	var k Key
 
-	//TODO validation
-
-	if input.AppID != 0 {
-		k.AppID = input.AppID
+	// Validate input
+	err := s.Validator.Struct(input)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			s.Log.Error().Err(err).Msg("Validation failed")
+		}
+		return nil, ErrValidationFailed
 	}
-	
-	if input.Alg != "" {
-		k.Alg = input.Alg
-	}
 
+	k.AppID = input.AppID
+	k.Alg = input.Alg
 	timeNow := time.Now().Unix()
 	k.CreatedAt = timeNow
 
@@ -52,9 +56,18 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 
 	//TODO get client id and alg from App
 
+	//include app service
+	//get app from appService.GetByID(k.AppID)
+	//then use result.ClientID
+
+
+
+
 	// https://golang-jwt.github.io/jwt/usage/signing_methods/
 
 	var clientID = 666
+
+	// Generate the keys for the app based on algorithm
 	s.generate(clientID,k.Alg)
 
 	return createdKey, nil

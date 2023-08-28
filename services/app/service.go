@@ -8,18 +8,22 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type Service struct {
 	Log   *log.Logger
 	Store *Store
+	Validator *validator.Validate
 	KeyService *key.Service // Inject key service dependency
 }
 
-func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, keyService *key.Service) *Service {
+func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *validator.Validate, keyService *key.Service) *Service {
 	return &Service{
 		Log:   log,
 		Store: NewStore(log, conf, db),
+		Validator: validator,
 		KeyService: keyService,
 	}
 }
@@ -27,18 +31,18 @@ func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, keyService *key
 func (s *Service) Create(input AppInput) (*App, error) {
 	var a App
 
-	//TODO validation
-	if input.AppName != "" {
-		a.AppName = input.AppName
+	// Validate input
+	err := s.Validator.Struct(input)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			s.Log.Error().Err(err).Msg("Validation failed")
+		}
+		return nil, ErrValidationFailed
 	}
 
-	if input.AppURI != "" {
-		a.AppURI = input.AppURI
-	}
-
-	if input.Alg != "" {
-		a.Alg = input.Alg
-	}
+	a.AppName = input.AppName
+	a.AppURI = input.AppURI
+	a.Alg = input.Alg
 
 	// if input.RedirectURL != "" {
 	// 	a.RedirectURL = input.RedirectURL
@@ -48,6 +52,8 @@ func (s *Service) Create(input AppInput) (*App, error) {
 	// 	a.ClientType = input.ClientType
 	// }
 
+	// Generate client id
+	a.ClientID = uuid.New().String()
 	timeNow := time.Now().Unix()
 	a.CreatedAt = timeNow
 	a.UpdatedAt = timeNow
@@ -89,21 +95,29 @@ func (s *Service) Update(id string, input *AppInput) (*App, error) {
 		return nil, err
 	}
 
-	if input.AppName != "" {
-		a.AppName = input.AppName
+	// Validate input
+	err = s.Validator.Struct(input)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			s.Log.Error().Err(err).Msg("Validation failed")
+		}
+		return nil, ErrValidationFailed
 	}
+
+	a.AppName = input.AppName
+
 
 	if input.AppURI != "" {
 		a.AppURI = input.AppURI
 	}
 
-	// if input.RedirectURL != "" {
-	// 	a.RedirectURL = input.RedirectURL
-	// }
+	if input.RedirectURI != "" {
+		a.RedirectURI = input.RedirectURI
+	}
 
-	// if input.ClientType != "" {
-	// 	a.ClientType = input.ClientType
-	// }
+	if input.ClientType != "" {
+		a.ClientType = input.ClientType
+	}
 
 	a.UpdatedAt = time.Now().Unix()
 

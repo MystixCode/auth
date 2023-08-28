@@ -9,5 +9,6 @@ var (
 	ErrFindFailed               = errors.New("internal error while find app(s)")
 	ErrUpdatedFailed            = errors.New("error while updating app")
 	ErrDeleteFailed             = errors.New("error while deleting app")
+	ErrValidationFailed	= errors.New("validation failed")
 	// ErrPasswordChangeNotAllowed = errors.New("password update only allowed on the 'password_change' endpoint")
 )

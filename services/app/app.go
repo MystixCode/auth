@@ -2,6 +2,7 @@ package app
 
 import (
 	"auth/services/key"
+
 )
 
 type App struct {
@@ -19,11 +20,11 @@ type App struct {
 }
 
 type AppInput struct {
-	AppName  		string `json:"app_name"`
+	AppName  		string `json:"app_name" validate:"required"`
 	AppURI      	string `json:"app_uri"`
-	Alg				string `json:"alg"`
-	//RedirectURI   string `json:"redirect_uri"`
-	//ClientType    string `json:"client_type"`
+	Alg				string `json:"alg" validate:"required"`
+	RedirectURI   	string `json:"redirect_uri"`
+	ClientType    	string `json:"client_type"`
 }
 
 // type PasswordInput struct {

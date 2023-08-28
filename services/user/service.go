@@ -34,16 +34,20 @@ func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *vali
 	}
 }
 
-func (s *Service) readKey(appName string, signMethod jwt.SigningMethod)(signKey interface{}, err error) {
+func (s *Service) readKey(clientID string, alg string)(signKey interface{}, err error) {
 	s.Log.Debug().Msg("ReadKey Func ;)")
+
+
+	//TODO this func in key service
 
 	var (
 		privPath	string
 		signBytes   []byte
 	)
 
-	if signMethod == jwt.SigningMethodRS256 {
-		privPath = appName + "_rsa.pem"
+	//TODO case instead of ifs
+	if alg == "RS256" {
+		privPath = clientID + "_rsa.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
 			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
@@ -56,8 +60,8 @@ func (s *Service) readKey(appName string, signMethod jwt.SigningMethod)(signKey 
 		}
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
-	} else if signMethod == jwt.SigningMethodEdDSA {
-		privPath = appName + "_ed25519.pem"
+	} else if alg == "Ed25519" {
+		privPath = clientID + "_ed25519.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
 			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
@@ -70,13 +74,13 @@ func (s *Service) readKey(appName string, signMethod jwt.SigningMethod)(signKey 
 		}
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
-	} else if signMethod == jwt.SigningMethodHS256 {
+	} else if alg == "HS256" {
 		signKey = []byte("AllYourBase")
 	}
 	return signKey, nil
 }
 
-func (s *Service) generateAccessToken(userName string, userID int, scopes string, signMethod jwt.SigningMethod, signKey interface{}) (accessToken string, err error) {
+func (s *Service) generateAccessToken(userName string, userID int, scopes string, alg string, signKey interface{}) (accessToken string, err error) {
 	s.Log.Debug().Msg("generateAccessToken Func ;)")
 
 	claims := MyCustomClaims{
@@ -93,6 +97,18 @@ func (s *Service) generateAccessToken(userName string, userID int, scopes string
 		},
 	}
 
+	var signMethod jwt.SigningMethod
+	switch alg {
+	case "RS256":
+		signMethod = jwt.SigningMethodRS256
+	case "Ed25519":
+		signMethod = jwt.SigningMethodEdDSA
+	case "HS256":
+		signMethod = jwt.SigningMethodHS256
+	default:
+		s.Log.Error().Err(ErrLogin).Msg("unknown method")
+	}
+
 	unsignedToken := jwt.NewWithClaims(signMethod, claims)
 	
 	accessToken, err = unsignedToken.SignedString(signKey)
@@ -104,7 +120,7 @@ func (s *Service) generateAccessToken(userName string, userID int, scopes string
 	return accessToken, nil
 }
 
-func (s *Service) generateRefreshToken(userID int, signMethod jwt.SigningMethod, signKey interface{}) (refreshToken string, err error) {
+func (s *Service) generateRefreshToken(userID int, alg string, signKey interface{}) (refreshToken string, err error) {
 	s.Log.Debug().Msg("generateRfreshToken Func ;)")
 
 	claims := jwt.RegisteredClaims{
@@ -112,6 +128,18 @@ func (s *Service) generateRefreshToken(userID int, signMethod jwt.SigningMethod,
 		Subject:   strconv.Itoa(userID),         // Replace with the user ID
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(30 * 24 * time.Hour)), // Refresh token expiration (30 days)
+	}
+
+	var signMethod jwt.SigningMethod
+	switch alg {
+	case "RS256":
+		signMethod = jwt.SigningMethodRS256
+	case "Ed25519":
+		signMethod = jwt.SigningMethodEdDSA
+	case "HS256":
+		signMethod = jwt.SigningMethodHS256
+	default:
+		s.Log.Error().Err(ErrLogin).Msg("unknown method")
 	}
 
 	unsignedToken := jwt.NewWithClaims(signMethod, claims)
@@ -146,6 +174,8 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 
 	// TODO: verify client_id exists
 
+	// TODO: verify that the user belongs to app with ClientID
+
 	// Verify hash
 	if input.Hash != foundUser.Hash {
 		s.Log.Error().Err(ErrLogin).Msg("Hashes are not equal")
@@ -154,13 +184,13 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	s.Log.Debug().Msg("hash is equal")
 
 	//TODO: get AppName from app with Client_id
-	appName := "test"
+	//appName := "test"
 
-	//TODO: get method from app
-	signMethod := jwt.SigningMethodEdDSA
+	//TODO: get alg from app!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	alg := "Ed25519"
 
 	//readKey
-	signKey, err := s.readKey(appName, signMethod)
+	signKey, err := s.readKey(input.ClientID, alg)
 	if err != nil {
 		s.Log.Fatal().Err(err).Msg("Error reading key")
 		return nil, err
@@ -172,14 +202,14 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	userName := foundUser.UserName
 
 	//generateAccessToken
-	accessToken, err := s.generateAccessToken(userName, userID, scopes, signMethod, signKey)
+	accessToken, err := s.generateAccessToken(userName, userID, scopes, alg, signKey)
 	if err != nil {
 		s.Log.Fatal().Err(err).Msg("Error generating access token")
 		return nil, err
 	}
 
 	//generateRefreshToken
-	refreshToken, err := s.generateRefreshToken(userID, signMethod, signKey)
+	refreshToken, err := s.generateRefreshToken(userID, alg, signKey)
 	if err != nil {
 		s.Log.Fatal().Err(err).Msg("Error generating refresh token")
 		return nil, err

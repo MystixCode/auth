@@ -8,6 +8,6 @@ type Key struct {
 }
 
 type KeyInput struct {
-	AppID int		`json:"app_id" validate:"required,number"`
-	Alg		string	`json:"alg" validate:"alphanumeric"`
+	AppID 	int		`json:"app_id" validate:"required,number"`
+	Alg		string	`json:"alg" validate:"required,alphanum"`
 }

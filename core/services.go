@@ -18,10 +18,10 @@ func (c *Core) newServices() *services.Services {
 	userService := user.NewService(c.Log, c.Conf, c.Database, c.Validator)
 	exampleService := example.NewService(c.Log, c.Conf, c.Database)
     // Create an instance of key.Service
-    keyService := key.NewService(c.Log, c.Conf, c.Database)
+    keyService := key.NewService(c.Log, c.Conf, c.Database, c.Validator)
 
     // Create an instance of app.Service and inject the key.Service instance
-    appService := app.NewService(c.Log, c.Conf, c.Database, keyService)
+    appService := app.NewService(c.Log, c.Conf, c.Database, c.Validator, keyService)
 
 	return &services.Services{
 		Root:		rootService,
