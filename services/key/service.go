@@ -192,7 +192,7 @@ func (s *Service) generate(clientID int, alg string) error {
 		s.Log.Debug().Msg("TODO: 6: function to generate and save to file!!!")
 
 	default:
-		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown method")
+		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown alg")
 	}
 
 	return err

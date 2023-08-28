@@ -310,13 +310,3 @@ func (s *Service) Update(id string, input *UserInput) (*User, error) {
 func (s *Service) Delete(id string) error {
 	return s.Store.Delete(id)
 }
-
-// func (s *Service) verifyPassword(hash string, password string) bool {
-// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-// 	if err != nil {
-// 		// TODO add logging
-// 		return false
-// 	}
-
-// 	return true
-// }
