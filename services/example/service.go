@@ -47,15 +47,11 @@ func (s *Service) Create(input ExampleInput) (*Example, error) {
 }
 
 func (s *Service) GetByID(id string) (*Example, error) {
-
 	return s.Store.GetByID(id)
-
 }
 
 func (s *Service) GetAll() ([]*Example, error) {
-
 	return s.Store.GetAll()
-
 }
 
 func (s *Service) Update(id string, input *ExampleInput) (*Example, error) {
@@ -79,6 +75,5 @@ func (s *Service) Update(id string, input *ExampleInput) (*Example, error) {
 }
 
 func (s *Service) Delete(id string) error {
-
 	return s.Store.Delete(id)
 }

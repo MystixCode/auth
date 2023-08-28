@@ -35,7 +35,7 @@ func jsonMiddleware(h http.Handler, c *Core) http.Handler {
 		// 	case "application/json":
 		// 		//fmt.Println("json header is set")
 		// 	default:
-		// 		c.Log.Error().Msg("Todo: respond error json header not set")
+		// 		c.Log.Error().Msg("respond error json header not set")
 		// 	}
 		// }
 

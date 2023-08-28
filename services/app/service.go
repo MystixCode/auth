@@ -44,16 +44,17 @@ func (s *Service) Create(input AppInput) (*App, error) {
 	a.AppURI = input.AppURI
 	a.Alg = input.Alg
 
-	// if input.RedirectURL != "" {
-	// 	a.RedirectURL = input.RedirectURL
-	// }
+	if input.RedirectURI != "" {
+		a.RedirectURI = input.RedirectURI
+	}
 
-	// if input.ClientType != "" {
-	// 	a.ClientType = input.ClientType
-	// }
+	if input.ClientType != "" {
+		a.ClientType = input.ClientType
+	}
 
 	// Generate client id
 	a.ClientID = uuid.New().String()
+
 	timeNow := time.Now().Unix()
 	a.CreatedAt = timeNow
 	a.UpdatedAt = timeNow
@@ -78,15 +79,11 @@ func (s *Service) Create(input AppInput) (*App, error) {
 }
 
 func (s *Service) GetByID(id string) (*App, error) {
-
 	return s.Store.GetByID(id)
-
 }
 
 func (s *Service) GetAll() ([]*App, error) {
-
 	return s.Store.GetAll()
-
 }
 
 func (s *Service) Update(id string, input *AppInput) (*App, error) {
@@ -106,7 +103,6 @@ func (s *Service) Update(id string, input *AppInput) (*App, error) {
 
 	a.AppName = input.AppName
 
-
 	if input.AppURI != "" {
 		a.AppURI = input.AppURI
 	}
@@ -125,16 +121,5 @@ func (s *Service) Update(id string, input *AppInput) (*App, error) {
 }
 
 func (s *Service) Delete(id string) error {
-
 	return s.Store.Delete(id)
 }
-
-// func (s *Service) verifyPassword(hash string, password string) bool {
-// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-// 	if err != nil {
-// 		// TODO add logging
-// 		return false
-// 	}
-
-// 	return true
-// }

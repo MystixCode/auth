@@ -17,11 +17,9 @@ type Store struct {
 }
 
 func NewStore(log *log.Logger, conf *conf.Config, db *gorm.DB) *Store {
-
-	//TODO: is the conf really needed here?
 	return &Store{
 		log:  log,
-		conf: conf,
+		// conf: conf,
 		db:   db,
 	}
 }

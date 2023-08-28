@@ -34,19 +34,18 @@ func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *vali
 	}
 }
 
-func (s *Service) readKey(clientID string, alg string)(signKey interface{}, err error) {
+
+func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err error) {
 	s.Log.Debug().Msg("ReadKey Func ;)")
-
-
-	//TODO this func in key service
+	//TODO: 5: this func in key service!!!
 
 	var (
-		privPath	string
-		signBytes   []byte
+		privPath   string
+		signBytes  []byte
 	)
 
-	//TODO case instead of ifs
-	if alg == "RS256" {
+	switch alg {
+	case "RS256":
 		privPath = clientID + "_rsa.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
@@ -60,7 +59,7 @@ func (s *Service) readKey(clientID string, alg string)(signKey interface{}, err 
 		}
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
-	} else if alg == "Ed25519" {
+	case "Ed25519":
 		privPath = clientID + "_ed25519.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
@@ -74,9 +73,12 @@ func (s *Service) readKey(clientID string, alg string)(signKey interface{}, err 
 		}
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
-	} else if alg == "HS256" {
+	case "HS256":
 		signKey = []byte("AllYourBase")
+	default:
+		s.Log.Error().Err(ErrLogin).Msg("unknown alg")
 	}
+
 	return signKey, nil
 }
 
@@ -106,7 +108,7 @@ func (s *Service) generateAccessToken(userName string, userID int, scopes string
 	case "HS256":
 		signMethod = jwt.SigningMethodHS256
 	default:
-		s.Log.Error().Err(ErrLogin).Msg("unknown method")
+		s.Log.Error().Err(ErrLogin).Msg("unknown alg")
 	}
 
 	unsignedToken := jwt.NewWithClaims(signMethod, claims)
@@ -139,7 +141,7 @@ func (s *Service) generateRefreshToken(userID int, alg string, signKey interface
 	case "HS256":
 		signMethod = jwt.SigningMethodHS256
 	default:
-		s.Log.Error().Err(ErrLogin).Msg("unknown method")
+		s.Log.Error().Err(ErrLogin).Msg("unknown alg")
 	}
 
 	unsignedToken := jwt.NewWithClaims(signMethod, claims)
@@ -172,9 +174,15 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msgf("Found user: ", foundUser.UserName)
 
-	// TODO: verify client_id exists
 
-	// TODO: verify that the user belongs to app with ClientID
+	// TODO: 2: verify client_id exists !!!
+
+	//include appService
+	//get app from appService.GetByClientID(input.ClientID)
+	//then use foundApp for later request
+
+
+	// TODO: 3: verify that the user belongs to app with ClientID !!!
 
 	// Verify hash
 	if input.Hash != foundUser.Hash {
@@ -183,10 +191,8 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msg("hash is equal")
 
-	//TODO: get AppName from app with Client_id
-	//appName := "test"
+	//TODO: 4: get alg from app!!!
 
-	//TODO: get alg from app!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	alg := "Ed25519"
 
 	//readKey
@@ -255,15 +261,11 @@ func (s *Service) Create(input UserInput) (*User, error) {
 }
 
 func (s *Service) GetByID(id string) (*User, error) {
-
 	return s.Store.GetByID(id)
-
 }
 
 func (s *Service) GetAll() ([]*User, error) {
-
 	return s.Store.GetAll()
-
 }
 
 func (s *Service) Update(id string, input *UserInput) (*User, error) {
@@ -306,7 +308,6 @@ func (s *Service) Update(id string, input *UserInput) (*User, error) {
 }
 
 func (s *Service) Delete(id string) error {
-
 	return s.Store.Delete(id)
 }
 

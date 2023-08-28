@@ -54,14 +54,11 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 		return nil, err
 	}
 
-	//TODO get client id and alg from App
+	// TODO: 1: get client id !!!
 
 	//include app service
 	//get app from appService.GetByID(k.AppID)
 	//then use result.ClientID
-
-
-
 
 	// https://golang-jwt.github.io/jwt/usage/signing_methods/
 
@@ -74,19 +71,14 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 }
 
 func (s *Service) GetByID(id string) (*Key, error) {
-
 	return s.Store.GetByID(id)
-
 }
 
 func (s *Service) GetAll() ([]*Key, error) {
-
 	return s.Store.GetAll()
-
 }
 
 func (s *Service) Delete(id string) error {
-
 	return s.Store.Delete(id)
 }
 
@@ -197,7 +189,7 @@ func (s *Service) generate(clientID int, alg string) error {
 		pubPath := strconv.Itoa(clientID) + "_ed25519.pub.pem"
 		err = generateEd25519Keys(privPath, pubPath)
 	case "HS256":
-		s.Log.Debug().Msg("todo: function to generate and save to file")
+		s.Log.Debug().Msg("TODO: 6: function to generate and save to file!!!")
 
 	default:
 		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown method")
