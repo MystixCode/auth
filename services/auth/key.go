@@ -3,7 +3,7 @@ package auth
 import (
 // 	"auth/conf"
 // 	"auth/log"
-
+	"os"
 	"time"
 	"strconv"
 	"crypto/ed25519"
@@ -12,9 +12,13 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 
 // 	"gorm.io/gorm"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Key struct {
@@ -171,24 +175,95 @@ func generateEd25519Keys(privPath string, pubPath string) error {
 	return err
 }
 
+func (s *Service) generateHmacKey(privPath string) error {
+
+	//TODO: generate a proper hmac key
+	secret := "te3st!?fdg123_hfjghk!g78jtest_TODO_CHANGE_THAT"
+	message := "me0s-sage?mes566sage__TODO_CHANGE_THAT"
+
+	b := []byte(secret)
+	h := hmac.New(sha256.New, b)
+	h.Write([]byte(message))
+	signKey :=  []byte(base64.StdEncoding.EncodeToString(h.Sum(nil)))
+
+	//signKey := []byte("AllYourBase;)")
+	err := os.WriteFile(privPath, signKey, 0600)
+
+	return err
+}
+
 func (s *Service) generateKeys(clientID string, alg string) error {
 	var err error
 
 	switch alg {
 	case "RS256":
-		privPath := clientID + "_rsa.pem"
-		pubPath := clientID + "_rsa.pub.pem"
+		privPath := clientID + "_RS256.pem"
+		pubPath := clientID + "_RS256.pub.pem"
 		err = generateRSAKeys(privPath, pubPath)
 	case "Ed25519":
 		privPath := clientID + "_ed25519.pem"
 		pubPath := clientID + "_ed25519.pub.pem"
 		err = generateEd25519Keys(privPath, pubPath)
 	case "HS256":
-		s.Log.Debug().Msg("TODO: 6: function to generate and save to file!!!")
+		privPath := clientID + "_HS256.key"
+		err = s.generateHmacKey(privPath)
 
 	default:
 		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown alg")
 	}
 
 	return err
+}
+
+func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err error) {
+	s.Log.Debug().Msg("ReadKey Func ;)")
+
+	var (
+		privPath   string
+		signBytes  []byte
+	)
+
+	switch alg {
+	case "RS256":
+		privPath = clientID + "_RS256.pem"
+		signBytes, err = ioutil.ReadFile(privPath)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
+			return nil, err
+		}
+		parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error parsing private key")
+			return nil, err
+		}
+		signKey = parsedKey
+		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
+	case "Ed25519":
+		privPath = clientID + "_ed25519.pem"
+		signBytes, err = ioutil.ReadFile(privPath)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
+			return nil, err
+		}
+		parsedKey, err := jwt.ParseEdPrivateKeyFromPEM(signBytes)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error parsing private key")
+			return nil, err
+		}
+		signKey = parsedKey
+		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
+	case "HS256":
+		privPath = clientID + "_HS256.key"
+		signKey, err = ioutil.ReadFile(privPath)
+		if err != nil {
+			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
+			return nil, err
+		}
+		s.Log.Debug().Msgf("PrivateKey HS256: %s", signKey)
+
+	default:
+		s.Log.Error().Err(ErrLogin).Msg("unknown alg")
+	}
+
+	return signKey, nil
 }

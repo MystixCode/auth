@@ -6,7 +6,6 @@ import (
 
 	"time"
 	"strconv"
-	"io/ioutil"
 
 // 	"gorm.io/gorm"
 	"github.com/golang-jwt/jwt/v5"
@@ -37,53 +36,6 @@ type LoginInput struct {
 	ClientID  string `json:"client_id" validate:"required"`
 	UserName  string `json:"user_name" validate:"required,alphanum"`
 	Hash      string `json:"hash" validate:"required,base64"`
-}
-
-func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err error) {
-	s.Log.Debug().Msg("ReadKey Func ;)")
-	//TODO: 5: this func in key file!!!
-
-	var (
-		privPath   string
-		signBytes  []byte
-	)
-
-	switch alg {
-	case "RS256":
-		privPath = clientID + "_rsa.pem"
-		signBytes, err = ioutil.ReadFile(privPath)
-		if err != nil {
-			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
-			return nil, err
-		}
-		parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-		if err != nil {
-			s.Log.Fatal().Err(err).Msg("Error parsing private key")
-			return nil, err
-		}
-		signKey = parsedKey
-		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
-	case "Ed25519":
-		privPath = clientID + "_ed25519.pem"
-		signBytes, err = ioutil.ReadFile(privPath)
-		if err != nil {
-			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
-			return nil, err
-		}
-		parsedKey, err := jwt.ParseEdPrivateKeyFromPEM(signBytes)
-		if err != nil {
-			s.Log.Fatal().Err(err).Msg("Error parsing private key")
-			return nil, err
-		}
-		signKey = parsedKey
-		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
-	case "HS256":
-		signKey = []byte("AllYourBase")
-	default:
-		s.Log.Error().Err(ErrLogin).Msg("unknown alg")
-	}
-
-	return signKey, nil
 }
 
 func (s *Service) generateAccessToken(userName string, userID int, scopes string, alg string, signKey interface{}) (accessToken string, err error) {
@@ -195,23 +147,19 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msg("hash is equal")
 
-
-	//TODO: get scopes for this user
+	//TODO: get scopes for this user !!!
 	scopes := "readProfile"
 	userID := foundUser.ID
 	userName := foundUser.UserName
 	alg := foundApp.Alg
 	clientID := foundApp.ClientID
 	
-
 	//readKey
 	signKey, err := s.readKey(clientID, alg)
 	if err != nil {
 		s.Log.Fatal().Err(err).Msg("Error reading key")
 		return nil, err
 	}
-
-
 
 	//generateAccessToken
 	accessToken, err := s.generateAccessToken(userName, userID, scopes, alg, signKey)
