@@ -3,7 +3,7 @@ package api
 import (
 	// "encoding/json"
 	// ut "github.com/go-playground/universal-translator"
-	"auth/services/app"
+	"auth/services/auth"
 	"auth/log"
 
 	"encoding/json"
@@ -18,11 +18,11 @@ type AppEndpoint struct {
 	// logger     log.Logger
 	// translator *ut.UniversalTranslator
 	// validate   *validator.Validate
-	service *app.Service
+	service *auth.Service
 	log     *log.Logger
 }
 
-func NewAppEndpoint(log *log.Logger, service *app.Service) *AppEndpoint {
+func NewAppEndpoint(log *log.Logger, service *auth.Service) *AppEndpoint {
 	return &AppEndpoint{
 		service: service,
 		log:     log,
@@ -39,7 +39,7 @@ func NewAppEndpoint(log *log.Logger, service *app.Service) *AppEndpoint {
 // }
 
 func (e *AppEndpoint) Create(w http.ResponseWriter, r *http.Request) {
-	var input app.AppInput
+	var input auth.AppInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
@@ -54,7 +54,7 @@ func (e *AppEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	createdApp, err := e.service.Create(input)
+	createdApp, err := e.service.CreateApp(input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
 	}
@@ -63,10 +63,10 @@ func (e *AppEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *AppEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
-	apps, err := e.service.GetAll()
+	apps, err := e.service.GetAllApps()
 	if err != nil {
 		switch err {
-		case app.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
@@ -80,12 +80,12 @@ func (e *AppEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
 func (e *AppEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	foundApp, err := e.service.GetByID(id)
+	foundApp, err := e.service.GetAppByID(id)
 	if err != nil {
 		switch err {
-		case app.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case app.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
@@ -98,7 +98,7 @@ func (e *AppEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 
 func (e *AppEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	var input *app.AppInput
+	var input *auth.AppInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
@@ -112,12 +112,12 @@ func (e *AppEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	createdApp, err := e.service.Update(id, input)
+	createdApp, err := e.service.UpdateApp(id, input)
 	if err != nil {
 		switch err {
-		case app.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case app.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		// case user.ErrPasswordChangeNotAllowed:
 		// 	respond(w, http.StatusBadRequest, err.Error(), nil)
@@ -133,12 +133,12 @@ func (e *AppEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 func (e *AppEndpoint) Delete(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	err := e.service.Delete(id)
+	err := e.service.DeleteApp(id)
 	if err != nil {
 		switch err {
-		case app.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case app.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)

@@ -15,8 +15,8 @@ type Api struct {
 	Root   		*RootEndpoint
 	Health 		*HealthEndpoint
 	User    	*UserEndpoint
+	App    		*AppEndpoint
 	Example		*ExampleEndpoint
-	App 		*AppEndpoint
 }
 
 type Body struct {
@@ -24,9 +24,6 @@ type Body struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 }
-
-// type ValidationError map[string]string
-// type ValidationErrors []ValidationError
 
 func (a *Api) New(router *mux.Router) {
 	v1 := router.PathPrefix("/v1").Subrouter().StrictSlash(false)

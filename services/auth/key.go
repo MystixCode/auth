@@ -1,8 +1,8 @@
-package key
+package auth
 
 import (
-	"auth/conf"
-	"auth/log"
+// 	"auth/conf"
+// 	"auth/log"
 
 	"time"
 	"strconv"
@@ -13,26 +13,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
-	//"github.com/golang-jwt/jwt/v5"
-	"gorm.io/gorm"
+// 	"gorm.io/gorm"
 	"github.com/go-playground/validator/v10"
 )
 
-type Service struct {
-	Log   *log.Logger
-	Store *Store
-	Validator *validator.Validate
-}
 
-func NewService(log *log.Logger, conf *conf.Config, db *gorm.DB, validator *validator.Validate) *Service {
-	return &Service{
-		Log:   log,
-		Store: NewStore(log, conf, db),
-		Validator: validator,
-	}
-}
-
-func (s *Service) Create(input KeyInput) (*Key, error) {
+func (s *Service) CreateKey(input KeyInput) (*Key, error) {
 	var k Key
 
 	// Validate input
@@ -49,7 +35,7 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 	timeNow := time.Now().Unix()
 	k.CreatedAt = timeNow
 
-	createdKey, err := s.Store.Create(&k)
+	createdKey, err := s.AuthStore.CreateKey(&k)
 	if err != nil {
 		return nil, err
 	}
@@ -70,21 +56,21 @@ func (s *Service) Create(input KeyInput) (*Key, error) {
 	var clientID = 666
 
 	// Generate the keys for the app based on algorithm
-	s.generate(clientID,k.Alg)
+	s.generateKeys(clientID,k.Alg)
 
 	return createdKey, nil
 }
 
-func (s *Service) GetByID(id string) (*Key, error) {
-	return s.Store.GetByID(id)
+func (s *Service) GetKeyByID(id string) (*Key, error) {
+	return s.AuthStore.GetKeyByID(id)
 }
 
-func (s *Service) GetAll() ([]*Key, error) {
-	return s.Store.GetAll()
+func (s *Service) GetAllKeys() ([]*Key, error) {
+	return s.AuthStore.GetAllKeys()
 }
 
-func (s *Service) Delete(id string) error {
-	return s.Store.Delete(id)
+func (s *Service) DeleteKey(id string) error {
+	return s.AuthStore.DeleteKey(id)
 }
 
 
@@ -181,7 +167,7 @@ func generateEd25519Keys(privPath string, pubPath string) error {
 	return err
 }
 
-func (s *Service) generate(clientID int, alg string) error {
+func (s *Service) generateKeys(clientID int, alg string) error {
 	var err error
 
 	switch alg {

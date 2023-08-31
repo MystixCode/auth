@@ -3,7 +3,7 @@ package api
 import (
 	// "encoding/json"
 	// ut "github.com/go-playground/universal-translator"
-	"auth/services/user"
+	"auth/services/auth"
 	"auth/log"
 
 	"encoding/json"
@@ -18,11 +18,11 @@ type UserEndpoint struct {
 	// logger     log.Logger
 	// translator *ut.UniversalTranslator
 	// validate   *validator.Validate
-	service *user.Service
+	service *auth.Service
 	log     *log.Logger
 }
 
-func NewUserEndpoint(log *log.Logger, service *user.Service) *UserEndpoint {
+func NewUserEndpoint(log *log.Logger, service *auth.Service) *UserEndpoint {
 	return &UserEndpoint{
 		service: service,
 		log:     log,
@@ -39,7 +39,7 @@ func NewUserEndpoint(log *log.Logger, service *user.Service) *UserEndpoint {
 // }
 
 func (e *UserEndpoint) Login(w http.ResponseWriter, r *http.Request) {
-	var input user.LoginInput
+	var input auth.LoginInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
@@ -64,7 +64,7 @@ func (e *UserEndpoint) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
-	var input user.UserInput
+	var input auth.UserInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
@@ -79,7 +79,7 @@ func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	createdUser, err := e.service.Create(input)
+	createdUser, err := e.service.CreateUser(input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
 		return
@@ -89,10 +89,10 @@ func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (e *UserEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
-	users, err := e.service.GetAll()
+	users, err := e.service.GetAllUsers()
 	if err != nil {
 		switch err {
-		case user.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
@@ -106,12 +106,12 @@ func (e *UserEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
 func (e *UserEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	foundUser, err := e.service.GetByID(id)
+	foundUser, err := e.service.GetUserByID(id)
 	if err != nil {
 		switch err {
-		case user.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case user.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
@@ -124,7 +124,7 @@ func (e *UserEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 
 func (e *UserEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	var input *user.UserInput
+	var input *auth.UserInput
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
@@ -138,12 +138,12 @@ func (e *UserEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	createdUser, err := e.service.Update(id, input)
+	createdUser, err := e.service.UpdateUser(id, input)
 	if err != nil {
 		switch err {
-		case user.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case user.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		// case user.ErrPasswordChangeNotAllowed:
 		// 	respond(w, http.StatusBadRequest, err.Error(), nil)
@@ -159,12 +159,12 @@ func (e *UserEndpoint) Update(w http.ResponseWriter, r *http.Request) {
 func (e *UserEndpoint) Delete(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	err := e.service.Delete(id)
+	err := e.service.DeleteUser(id)
 	if err != nil {
 		switch err {
-		case user.ErrIdParseFailed:
+		case auth.ErrIdParseFailed:
 			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case user.ErrNotFound:
+		case auth.ErrNotFound:
 			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
 		default:
 			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
