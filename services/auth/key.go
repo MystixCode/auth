@@ -51,23 +51,16 @@ func (s *Service) CreateKey(input KeyInput) (*Key, error) {
 		return nil, err
 	}
 
-	// TODO: 1: get client id !!!
-	// foundApp, err := s.AppService.GetByID(k.AppID) // Call key service's Create method
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// s.Log.Debug().Msgf("Found ClientID", foundApp.ClientID)
-
-	//include app service
-	//get app from appService.GetByID(k.AppID)
-	//then use result.ClientID
+	foundApp, err := s.GetAppByID(strconv.Itoa(k.AppID)) // Call key service's Create method
+	if err != nil {
+		return nil, err
+	}
+	s.Log.Debug().Msgf("Found ClientID", foundApp.ClientID)
 
 	// https://golang-jwt.github.io/jwt/usage/signing_methods/
 
-	var clientID = 666
-
 	// Generate the keys for the app based on algorithm
-	s.generateKeys(clientID,k.Alg)
+	s.generateKeys(foundApp.ClientID,k.Alg)
 
 	return createdKey, nil
 }
@@ -178,17 +171,17 @@ func generateEd25519Keys(privPath string, pubPath string) error {
 	return err
 }
 
-func (s *Service) generateKeys(clientID int, alg string) error {
+func (s *Service) generateKeys(clientID string, alg string) error {
 	var err error
 
 	switch alg {
 	case "RS256":
-		privPath := strconv.Itoa(clientID) + "_rsa.pem"
-		pubPath := strconv.Itoa(clientID) + "_rsa.pub.pem"
+		privPath := clientID + "_rsa.pem"
+		pubPath := clientID + "_rsa.pub.pem"
 		err = generateRSAKeys(privPath, pubPath)
 	case "Ed25519":
-		privPath := strconv.Itoa(clientID) + "_ed25519.pem"
-		pubPath := strconv.Itoa(clientID) + "_ed25519.pub.pem"
+		privPath := clientID + "_ed25519.pem"
+		pubPath := clientID + "_ed25519.pub.pem"
 		err = generateEd25519Keys(privPath, pubPath)
 	case "HS256":
 		s.Log.Debug().Msg("TODO: 6: function to generate and save to file!!!")

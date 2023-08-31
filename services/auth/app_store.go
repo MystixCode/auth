@@ -50,6 +50,19 @@ func (s *AuthStore) GetAppByID(id string) (*App, error) {
 	return app, nil
 }
 
+func (s *AuthStore) GetAppByClientID(clientID string) (*App, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var app *App
+
+	result := s.db.WithContext(ctx).Where("client_id = ?", clientID).First(&app)
+	if result.Error != nil {
+		return nil, ErrNotFound
+	}
+
+	return app, nil
+}
+
 // func (s *Store) GetByUsername(username string) (*User, error) {
 // 	return s.getByKeyValue("username", username)
 // }

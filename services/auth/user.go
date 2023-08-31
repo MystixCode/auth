@@ -41,7 +41,7 @@ type LoginInput struct {
 
 func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err error) {
 	s.Log.Debug().Msg("ReadKey Func ;)")
-	//TODO: 5: this func in key service!!!
+	//TODO: 5: this func in key file!!!
 
 	var (
 		privPath   string
@@ -178,13 +178,13 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msgf("Found user: ", foundUser.UserName)
 
-
-	// TODO: 2: verify client_id exists !!!
-
-	//include appService
-	//get app from appService.GetByClientID(input.ClientID)
-	//then use foundApp for later request
-
+	// verify client_id/app exists
+	foundApp, err := s.AuthStore.GetAppByClientID(input.ClientID)
+	if err != nil {
+		s.Log.Error().Err(err).Msg("Verifying that client_id exists")
+		return nil, ErrLogin
+	}
+	s.Log.Debug().Msgf("Found client_id: ", foundApp.ClientID)
 
 	// TODO: 3: verify that the user belongs to app with ClientID !!!
 
@@ -195,21 +195,23 @@ func (s *Service) Login(input LoginInput) (*TokenResponse, error) {
 	}
 	s.Log.Debug().Msg("hash is equal")
 
-	//TODO: 4: get alg from app!!!
-
-	alg := "Ed25519"
-
-	//readKey
-	signKey, err := s.readKey(input.ClientID, alg)
-	if err != nil {
-		s.Log.Fatal().Err(err).Msg("Error reading key")
-		return nil, err
-	}
 
 	//TODO: get scopes for this user
 	scopes := "readProfile"
 	userID := foundUser.ID
 	userName := foundUser.UserName
+	alg := foundApp.Alg
+	clientID := foundApp.ClientID
+	
+
+	//readKey
+	signKey, err := s.readKey(clientID, alg)
+	if err != nil {
+		s.Log.Fatal().Err(err).Msg("Error reading key")
+		return nil, err
+	}
+
+
 
 	//generateAccessToken
 	accessToken, err := s.generateAccessToken(userName, userID, scopes, alg, signKey)
