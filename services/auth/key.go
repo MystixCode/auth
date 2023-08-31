@@ -82,7 +82,7 @@ func (s *Service) DeleteKey(id string) error {
 }
 
 
-func generateRSAKeys(privPath string, pubPath string) (error) {
+func (s *Service) generateRSAKeys(privPath string, pubPath string) (error) {
 
 	var (
 		err   error
@@ -129,7 +129,7 @@ func generateRSAKeys(privPath string, pubPath string) (error) {
 	return err
 }
 
-func generateEd25519Keys(privPath string, pubPath string) error {
+func (s *Service) generateEd25519Keys(privPath string, pubPath string) error {
 
 	var (
 		err   error
@@ -199,15 +199,14 @@ func (s *Service) generateKeys(clientID string, alg string) error {
 	case "RS256":
 		privPath := clientID + "_RS256.pem"
 		pubPath := clientID + "_RS256.pub.pem"
-		err = generateRSAKeys(privPath, pubPath)
+		err = s.generateRSAKeys(privPath, pubPath)
 	case "Ed25519":
 		privPath := clientID + "_ed25519.pem"
 		pubPath := clientID + "_ed25519.pub.pem"
-		err = generateEd25519Keys(privPath, pubPath)
+		err = s.generateEd25519Keys(privPath, pubPath)
 	case "HS256":
 		privPath := clientID + "_HS256.key"
 		err = s.generateHmacKey(privPath)
-
 	default:
 		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown alg")
 	}
