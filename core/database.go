@@ -9,9 +9,7 @@ import (
 	"gorm.io/gorm/logger"
 
 	"auth/services/example"
-	"auth/services/user"
-	"auth/services/app"
-	"auth/services/key"
+	"auth/services/auth"
 )
 
 func (c *Core) NewDatabase() *gorm.DB {
@@ -34,9 +32,9 @@ func (c *Core) NewDatabase() *gorm.DB {
 	// micgrate cli command is not needed with automigrate here
 	db.AutoMigrate(
 		example.Example{},
-		user.User{},
-		app.App{},
-		key.Key{},
+		auth.User{},
+		auth.App{},
+		auth.Key{},
 	)
 
 	c.registerShutdownFunc(func() error {

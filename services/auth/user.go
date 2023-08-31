@@ -14,6 +14,31 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type User struct {
+	ID        int    `json:"id" gorm:"primaryKey"`
+	UserName  string `json:"user_name" gorm:"not null"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Hash      string `json:"hash" gorm:"not null"`
+	CreatedAt int64  `json:"created_at" gorm:"not null"`
+	UpdatedAt int64  `json:"updated_at"`
+}
+
+type UserInput struct {
+	UserName  string `json:"user_name" validate:"required,alphanum"`
+	Email     string `json:"email" validate:"required,email"`
+	FirstName string `json:"first_name" validate:"omitempty,min=2,alphanum"`
+	LastName  string `json:"last_name" validate:"omitempty,min=2,alphanum"`
+	Hash      string `json:"hash" validate:"required,base64"`
+}
+
+type LoginInput struct {
+	ClientID  string `json:"client_id" validate:"required"`
+	UserName  string `json:"user_name" validate:"required,alphanum"`
+	Hash      string `json:"hash" validate:"required,base64"`
+}
+
 func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err error) {
 	s.Log.Debug().Msg("ReadKey Func ;)")
 	//TODO: 5: this func in key service!!!

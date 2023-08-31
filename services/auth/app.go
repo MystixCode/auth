@@ -12,6 +12,28 @@ import (
 	"github.com/google/uuid"
 )
 
+type App struct {
+	ID            	int    `json:"id" gorm:"primaryKey"`
+	AppName       	string `json:"app_name"`
+	AppURI        	string `json:"app_uri"`
+	RedirectURI   	string `json:"redirect_uri"`
+	ClientType    	string `json:"client_type"` //public or confidential. maybe create a table for it
+	Alg				string `json:"alg"`
+	ClientID		string `json:"client_id"`
+	CreatedAt     	int64  `json:"created_at"`
+	UpdatedAt     	int64  `json:"updated_at"`
+
+	Keys []Key `json:"keys" gorm:"foreignKey:AppID;onDelete:CASCADE"` // Many keys belong to one app
+}
+
+type AppInput struct {
+	AppName  		string `json:"app_name" validate:"required"`
+	AppURI      	string `json:"app_uri"`
+	Alg				string `json:"alg" validate:"required"`
+	RedirectURI   	string `json:"redirect_uri"`
+	ClientType    	string `json:"client_type"`
+}
+
 func (s *Service) CreateApp(input AppInput) (*App, error) {
 	var a App
 

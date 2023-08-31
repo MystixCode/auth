@@ -6,9 +6,7 @@ import (
 
 	"auth/core"
 	"auth/services/example"
-	"auth/services/user"
-	"auth/services/app"
-	"auth/services/key"
+	"auth/services/auth"
 
 	"github.com/spf13/cobra"
 )
@@ -35,9 +33,9 @@ func migrate(cmd *cobra.Command, args []string) {
 	appCore.NewDatabase()
 	appCore.Database.AutoMigrate(
 		example.Example{},
-		user.User{},
-		app.App{},
-		key.Key{},
+		auth.User{},
+		auth.App{},
+		auth.Key{},
 	)
 
 }
