@@ -14,7 +14,7 @@ import (
 	// "github.com/gorilla/mux"
 )
 
-type UserEndpoint struct {
+type AuthorizationCodeEndpoint struct {
 	// logger     log.Logger
 	// translator *ut.UniversalTranslator
 	// validate   *validator.Validate
@@ -22,8 +22,8 @@ type UserEndpoint struct {
 	log     *log.Logger
 }
 
-func NewUserEndpoint(log *log.Logger, service *auth.Service) *UserEndpoint {
-	return &UserEndpoint{
+func NewAuthorizationCodeEndpoint(log *log.Logger, service *auth.Service) *AuthorizationCodeEndpoint {
+	return &AuthorizationCodeEndpoint{
 		service: service,
 		log:     log,
 	}
@@ -38,8 +38,8 @@ func NewUserEndpoint(log *log.Logger, service *auth.Service) *UserEndpoint {
 // 	}
 // }
 
-func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
-	var input auth.UserInput
+func (e *AuthorizationCodeEndpoint) Create(w http.ResponseWriter, r *http.Request) {
+	var input auth.AuthorizationCodeInput
 
 	err := json.NewDecoder(r.Body).Decode(&input)
 	if err != nil {
@@ -54,17 +54,16 @@ func (e *UserEndpoint) Create(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	createdUser, err := e.service.CreateUser(input)
+	createdAuthorizationCode, err := e.service.CreateAuthorizationCode(input)
 	if err != nil {
 		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
-		return
 	}
 
-	respond(w, e.log, http.StatusCreated, "user created successfully", createdUser)
+	respond(w, e.log, http.StatusCreated, "AuthorizationCode created successfully", createdAuthorizationCode)
 }
 
-func (e *UserEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
-	users, err := e.service.GetAllUsers()
+func (e *AuthorizationCodeEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
+	authorizationCodes, err := e.service.GetAllAuthorizationCodes()
 	if err != nil {
 		switch err {
 		case auth.ErrNotFound:
@@ -75,13 +74,13 @@ func (e *UserEndpoint) GetAll(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	respond(w, e.log, http.StatusOK, "load all users successfully", users)
+	respond(w, e.log, http.StatusOK, "load all AuthorizationCodes successfully", authorizationCodes)
 }
 
-func (e *UserEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
+func (e *AuthorizationCodeEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	foundUser, err := e.service.GetUserByID(id)
+	foundAuthorizationCode, err := e.service.GetAuthorizationCodeByID(id)
 	if err != nil {
 		switch err {
 		case auth.ErrIdParseFailed:
@@ -94,47 +93,13 @@ func (e *UserEndpoint) GetById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, e.log, http.StatusOK, "successfully found user", foundUser)
+	respond(w, e.log, http.StatusOK, "successfully found App", foundAuthorizationCode)
 }
 
-func (e *UserEndpoint) Update(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	var input *auth.UserInput
-	err := json.NewDecoder(r.Body).Decode(&input)
-	if err != nil {
-		respond(w, e.log, http.StatusBadRequest, "invalid body", nil)
-		return
-	}
-
-	// err = e.validate.Struct(input)
-	// if err != nil {
-	// 	errs := getValidationError(err.(validator.ValidationErrors), trans)
-	// 	respond(w, e.logger, http.StatusBadRequest, "validation failed", errs)
-	// 	return
-	// }
-
-	createdUser, err := e.service.UpdateUser(id, input)
-	if err != nil {
-		switch err {
-		case auth.ErrIdParseFailed:
-			respond(w, e.log, http.StatusBadRequest, err.Error(), nil)
-		case auth.ErrNotFound:
-			respond(w, e.log, http.StatusNotFound, err.Error(), nil)
-		// case user.ErrPasswordChangeNotAllowed:
-		// 	respond(w, http.StatusBadRequest, err.Error(), nil)
-		default:
-			respond(w, e.log, http.StatusInternalServerError, err.Error(), nil)
-		}
-		return
-	}
-
-	respond(w, e.log, http.StatusCreated, "user updated successfully", createdUser)
-}
-
-func (e *UserEndpoint) Delete(w http.ResponseWriter, r *http.Request) {
+func (e *AuthorizationCodeEndpoint) Delete(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
-	err := e.service.DeleteUser(id)
+	err := e.service.DeleteAuthorizationCode(id)
 	if err != nil {
 		switch err {
 		case auth.ErrIdParseFailed:

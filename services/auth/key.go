@@ -22,14 +22,14 @@ import (
 )
 
 type Key struct {
-	ID         	int		`json:"id" gorm:"primaryKey"`
-	AppID		int		`json:"app_id" gorm:"not null"`
+	ID         	uint	`json:"id" gorm:"primaryKey"`
+	AppID		uint		`json:"app_id" gorm:"not null"`
 	Alg			string	`json:"alg" gorm:"not null"`
 	CreatedAt	int64	`json:"created_at" gorm:"not null"`
 }
 
 type KeyInput struct {
-	AppID 	int		`json:"app_id" validate:"required,number"`
+	AppID 	uint		`json:"app_id" validate:"required,number"`
 	Alg		string	`json:"alg" validate:"required,alphanum"`
 }
 
@@ -55,7 +55,7 @@ func (s *Service) CreateKey(input KeyInput) (*Key, error) {
 		return nil, err
 	}
 
-	foundApp, err := s.GetAppByID(strconv.Itoa(k.AppID)) // Call key service's Create method
+	foundApp, err := s.GetAppByID(strconv.Itoa(int(k.AppID))) // Call key service's Create method
 	if err != nil {
 		return nil, err
 	}
@@ -177,9 +177,9 @@ func (s *Service) generateEd25519Keys(privPath string, pubPath string) error {
 
 func (s *Service) generateHmacKey(privPath string) error {
 
-	//TODO: generate a proper hmac key
-	secret := "te3st!?fdg123_hfjghk!g78jtest_TODO_CHANGE_THAT"
-	message := "me0s-sage?mes566sage__TODO_CHANGE_THAT"
+	//TODO: generate a proper hmac key !!!
+	secret := "te3st!?fdg123_hfjghk!g78jtest_CHANGE_THAT"
+	message := "me0s-sage?mes566sage__CHANGE_THAT"
 
 	b := []byte(secret)
 	h := hmac.New(sha256.New, b)
@@ -194,18 +194,18 @@ func (s *Service) generateHmacKey(privPath string) error {
 
 func (s *Service) generateKeys(clientID string, alg string) error {
 	var err error
-
+	var keyDir string = "keys/"
 	switch alg {
 	case "RS256":
-		privPath := clientID + "_RS256.pem"
-		pubPath := clientID + "_RS256.pub.pem"
+		privPath := keyDir + clientID + "_RS256.pem"
+		pubPath := keyDir + clientID + "_RS256.pub.pem"
 		err = s.generateRSAKeys(privPath, pubPath)
 	case "Ed25519":
-		privPath := clientID + "_ed25519.pem"
-		pubPath := clientID + "_ed25519.pub.pem"
+		privPath := keyDir + clientID + "_ed25519.pem"
+		pubPath := keyDir + clientID + "_ed25519.pub.pem"
 		err = s.generateEd25519Keys(privPath, pubPath)
 	case "HS256":
-		privPath := clientID + "_HS256.key"
+		privPath := keyDir + clientID + "_HS256.key"
 		err = s.generateHmacKey(privPath)
 	default:
 		s.Log.Error().Err(ErrKeyGenFailed).Msg("unknown alg")
@@ -218,13 +218,14 @@ func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err
 	s.Log.Debug().Msg("ReadKey Func ;)")
 
 	var (
-		privPath   string
-		signBytes  []byte
+		keyDir      string = "keys/"
+		privPath    string
+		signBytes   []byte
 	)
 
 	switch alg {
 	case "RS256":
-		privPath = clientID + "_RS256.pem"
+		privPath = keyDir + clientID + "_RS256.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
 			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
@@ -238,7 +239,7 @@ func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey RSA: %s", signKey)
 	case "Ed25519":
-		privPath = clientID + "_ed25519.pem"
+		privPath = keyDir + clientID + "_ed25519.pem"
 		signBytes, err = ioutil.ReadFile(privPath)
 		if err != nil {
 			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")
@@ -252,7 +253,7 @@ func (s *Service) readKey(clientID string, alg string) (signKey interface{}, err
 		signKey = parsedKey
 		s.Log.Debug().Msgf("PrivateKey Ed25519: %s", signKey)
 	case "HS256":
-		privPath = clientID + "_HS256.key"
+		privPath = keyDir + clientID + "_HS256.key"
 		signKey, err = ioutil.ReadFile(privPath)
 		if err != nil {
 			s.Log.Fatal().Err(err).Msg("Error reading private key bytes")

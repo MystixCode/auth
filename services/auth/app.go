@@ -13,7 +13,7 @@ import (
 )
 
 type App struct {
-	ID            	int    `json:"id" gorm:"primaryKey"`
+	ID            	uint    `json:"id" gorm:"primaryKey"`
 	AppName       	string `json:"app_name"`
 	AppURI        	string `json:"app_uri"`
 	RedirectURI   	string `json:"redirect_uri"`

@@ -13,7 +13,8 @@ services:
     depends_on:
       - pg
     volumes:
-      - ./config.yaml:/app/config.yaml
+      - ./config.yaml:/config.yaml
+      - ./keys/:/keys/
     
   pg:
     image: postgres:15.3-alpine

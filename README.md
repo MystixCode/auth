@@ -4,7 +4,7 @@ auth is a go api
 
 It's a container with the api and a container with a postgresql database.
 
-Its not oauth standard ;)
+This project is in a not fully working pre-alpha state!
 
 <img src="auth.drawio.png" width="100%" height="100%">
 <!-- <img src="https:///.png" width="100%" height="100%"> -->
@@ -51,3 +51,7 @@ docker compose up --build -d postgres
 # Run migrate cli command
 go run auth migrate
 ```
+
+#TODO: there are still some values set static for testing
+#TODO: a guide how to actually use it with test-app etc + a proper insomnia export or something like that + my db.drawio
+explain the login flow, different key algos etc

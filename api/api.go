@@ -12,11 +12,13 @@ import (
 )
 
 type Api struct {
-	Root   		*RootEndpoint
-	Health 		*HealthEndpoint
-	User    	*UserEndpoint
-	App    		*AppEndpoint
-	Example		*ExampleEndpoint
+	Root   				*RootEndpoint
+	Health 				*HealthEndpoint
+	User    			*UserEndpoint
+	App    				*AppEndpoint
+	AuthorizationCode	*AuthorizationCodeEndpoint
+	Login				*LoginEndpoint
+	Example				*ExampleEndpoint
 }
 
 type Body struct {
@@ -48,7 +50,6 @@ func (a *Api) New(router *mux.Router) {
 	v1.HandleFunc("/users/{id}", a.User.GetById).Methods(http.MethodGet)
 	v1.HandleFunc("/users/{id}", a.User.Update).Methods(http.MethodPut)
 	v1.HandleFunc("/users/{id}", a.User.Delete).Methods(http.MethodDelete)
-	v1.HandleFunc("/users/login", a.User.Login).Methods(http.MethodPost)
 
 	// App
 	v1.HandleFunc("/apps", a.App.Create).Methods(http.MethodPost)
@@ -56,6 +57,19 @@ func (a *Api) New(router *mux.Router) {
 	v1.HandleFunc("/apps/{id}", a.App.GetById).Methods(http.MethodGet)
 	v1.HandleFunc("/apps/{id}", a.App.Update).Methods(http.MethodPut)
 	v1.HandleFunc("/apps/{id}", a.App.Delete).Methods(http.MethodDelete)
+
+	// AuthorizationCode
+	v1.HandleFunc("/authorizationcodes", a.AuthorizationCode.Create).Methods(http.MethodPost)
+	v1.HandleFunc("/authorizationcodes", a.AuthorizationCode.GetAll).Methods(http.MethodGet)
+	v1.HandleFunc("/authorizationcodes/{id}", a.AuthorizationCode.GetById).Methods(http.MethodGet)
+	v1.HandleFunc("/authorizationcodes/{id}", a.AuthorizationCode.Delete).Methods(http.MethodDelete)
+
+	// Oauth Flows endpoints
+	v1.HandleFunc("/login/oauth/authorize", a.Login.Authorize).Methods(http.MethodGet)
+	v1.HandleFunc("/login/oauth/authorize", a.Login.Authorize).Methods(http.MethodPost)
+	v1.HandleFunc("/login", a.Login.LoginPage).Methods(http.MethodGet)
+	v1.HandleFunc("/login/token", a.Login.Token).Methods(http.MethodPost)
+	// v1.HandleFunc("/login/oauth/consent", a.Login.Consent).Methods(http.MethodGet)
 
 }
 

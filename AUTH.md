@@ -27,6 +27,17 @@ type User struct {
 	Roles         []Role         `json:"roles" gorm:"many2many:user_roles;"`
 }
 
+type AuthorizationCode struct {
+	ID          uint   `gorm:"primaryKey"`
+	Code        string `json:"code"`
+	Expiry      int64  `json:"expiry"`
+	CreatedAt   int64  `json:"created_at"`
+	UpdatedAt   int64  `json:"updated_at"`
+
+	UserID      uint   `json:"user_id"`  // Foreign key referencing the User table
+	AppID       uint   `json:"app_id"`   // Foreign key referencing the App table
+}
+
 //i need those token tables. else i clouldnt revoke them.
 type AccessToken struct {
 	ID        uint   `gorm:"primaryKey"`

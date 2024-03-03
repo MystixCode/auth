@@ -34,6 +34,7 @@ func (c *Core) NewDatabase() *gorm.DB {
 		example.Example{},
 		auth.User{},
 		auth.App{},
+		auth.AuthorizationCode{},
 		auth.Key{},
 	)
 

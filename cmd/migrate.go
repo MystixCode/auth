@@ -35,6 +35,7 @@ func migrate(cmd *cobra.Command, args []string) {
 		example.Example{},
 		auth.User{},
 		auth.App{},
+		auth.AuthorizationCode{},
 		auth.Key{},
 	)
 
