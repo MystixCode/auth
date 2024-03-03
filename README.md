@@ -56,9 +56,16 @@ docker compose up --build -d postgres
 go run auth migrate
 ```
 
-## some schemas
+## some screenshots
+
+<img src="help.png" width="70%" height="70%">
+
+
+<img src="log.png" width="100%" height="100%">
+
 
 <img src="db-and-logic.drawio.png" width="100%" height="100%">
+
 
 The image below is already outdated. Now i started implementing authorization code flow ;)
 <img src="auth.drawio.png" width="100%" height="100%">

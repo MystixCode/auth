@@ -13,7 +13,7 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "auth",
 		Short: "auth is a go api template",
-		Long: `auth is a go api template empowering new applications.
+		Long: `auth is a go auth provider empowering new applications.
 This application is under heavy development.`,
 	}
 )
