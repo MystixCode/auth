@@ -65,7 +65,7 @@ func New(cfgFile string, isDebug bool, logFile string) (*Core, error) {
 	c.api = c.newApi()
 	c.state = health.StateRunning
 
-	c.Log.Info().Msg("New core done")
+	c.Log.Info().Msg("New core ready")
 	return c, nil
 }
 
