@@ -11,12 +11,8 @@ I want this to become a very basic auth provider.
 Be aware this is NOT secure! I dont know what im doing.
 
 I want to support different types of apps. Normal webapps with redirect url etc. and desktop apps like for example a game client with a different auth flow.
+
 So far i added support for 3 different types of keys/algorithms (RS256,Ed25519,HS256).
-
-The image below is already outdated. Now i started implementing authorization code flow ;)
-<img src="auth.drawio.png" width="100%" height="100%">
-<!-- <img src="https:///.png" width="100%" height="100%"> -->
-
 
 ## run compose in dev mode
 
@@ -59,6 +55,14 @@ docker compose up --build -d postgres
 # Run migrate cli command
 go run auth migrate
 ```
+
+## some schemas
+
+<img src="db-and-logic.drawio.png" width="100%" height="100%">
+
+The image below is already outdated. Now i started implementing authorization code flow ;)
+<img src="auth.drawio.png" width="100%" height="100%">
+<!-- <img src="https:///.png" width="100%" height="100%"> -->
 
 #TODO: there are still some values set static for testing
 
