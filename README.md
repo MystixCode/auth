@@ -68,7 +68,7 @@ go run auth migrate
 
 
 The image below is already outdated. Now i started implementing authorization code flow ;)
-<img src="auth.drawio.png" width="100%" height="100%">
+<img src="auth.drawio.png" width="70%" height="70%">
 <!-- <img src="https:///.png" width="100%" height="100%"> -->
 
 #TODO: there are still some values set static for testing
