@@ -26,7 +26,7 @@ func (c *Core) NewDatabase() *gorm.DB {
 	if err != nil {
 		c.Log.Fatal().Err(err).Msg("Error opening db")
 	} else {
-		c.Log.Info().Msg("DB OK")
+		c.Log.Info().Msg("Database connected")
 	}
 
 	// micgrate cli command is not needed with automigrate here

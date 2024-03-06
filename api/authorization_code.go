@@ -93,7 +93,7 @@ func (e *AuthorizationCodeEndpoint) GetById(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	respond(w, e.log, http.StatusOK, "successfully found App", foundAuthorizationCode)
+	respond(w, e.log, http.StatusOK, "Successfully found AuthorizationCode", foundAuthorizationCode)
 }
 
 func (e *AuthorizationCodeEndpoint) Delete(w http.ResponseWriter, r *http.Request) {
