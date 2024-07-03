@@ -195,6 +195,9 @@ func (s *Service) generateHmacKey(privPath string) error {
 func (s *Service) generateKeys(clientID string, alg string) error {
 	var err error
 	var keyDir string = "keys/"
+	var mode os.FileMode = 0755
+	_ = os.Mkdir(keyDir, mode)
+
 	switch alg {
 	case "RS256":
 		privPath := keyDir + clientID + "_RS256.pem"
